@@ -1,0 +1,123 @@
+{
+  "generatedAt": "2026-09-04T05:02:43.380Z",
+  "sdkSync": {
+    "success": false,
+    "skipped": true,
+    "error": null,
+    "upstreamCount": 0,
+    "attemptedAt": "2026-09-04T05:02:43.380Z"
+  },
+  "models": {
+    "llm": [
+      {
+        "id": "doubao-seed-2-0-pro-260215",
+        "name": "Doubao Seed 2.0 Pro",
+        "type": "llm",
+        "inputTypes": [
+          "text",
+          "image",
+          "video"
+        ],
+        "outputTypes": [
+          "text"
+        ],
+        "description": "旗舰级全能通用模型，复杂推理与长链路任务",
+        "default": true,
+        "source": "static"
+      },
+      {
+        "id": "doubao-seed-2-0-lite-260215",
+        "name": "Doubao Seed 2.0 Lite",
+        "type": "llm",
+        "inputTypes": [
+          "text",
+          "image",
+          "video"
+        ],
+        "outputTypes": [
+          "text"
+        ],
+        "description": "性能与成本均衡的通用模型",
+        "source": "static"
+      },
+      {
+        "id": "doubao-seed-2-0-mini-260215",
+        "name": "Doubao Seed 2.0 Mini",
+        "type": "llm",
+        "inputTypes": [
+          "text",
+          "image",
+          "video"
+        ],
+        "outputTypes": [
+          "text"
+        ],
+        "description": "低时延、高并发、成本敏感场景",
+        "source": "static"
+      },
+      {
+        "id": "glm-4-7-251222",
+        "name": "GLM-4.7",
+        "type": "llm",
+        "inputTypes": [
+          "text"
+        ],
+        "outputTypes": [
+          "text"
+        ],
+        "description": "智谱旗舰，编程与多步骤推理",
+        "source": "static"
+      }
+    ],
+    "vision": [],
+    "image": [
+      {
+        "id": "doubao-seedream-5-0-260128",
+        "name": "Seedream 5.0（默认）",
+        "type": "image",
+        "description": "旗舰文生图/图生图/组图模型",
+        "default": true,
+        "source": "static"
+      },
+      {
+        "id": "doubao-seedream-4-5-251128",
+        "name": "Seedream 4.5",
+        "type": "image",
+        "description": "上一代生图模型，速度更快",
+        "source": "static"
+      }
+    ],
+    "video": [
+      {
+        "id": "doubao-seedance-2-0-260128",
+        "name": "Seedance 2.0（默认）",
+        "type": "video",
+        "description": "文生视频/首尾帧/多模态参考（参考图+视频+音频）/同步音频生成",
+        "default": true,
+        "source": "static"
+      },
+      {
+        "id": "doubao-seedance-1-0-pro-250528",
+        "name": "Seedance 1.0 Pro",
+        "type": "video",
+        "description": "文生视频/首尾帧（无多模态参考）",
+        "source": "static"
+      }
+    ],
+    "embedding": [
+      {
+        "id": "doubao-embedding-vision-251215",
+        "name": "Doubao Embedding Vision（默认）",
+        "type": "embedding",
+        "description": "多模态向量化：文本/图片/视频，dimensions 512/1024/2048",
+        "default": true,
+        "source": "static"
+      }
+    ],
+    "tts": {
+      "engine": "TTSClient",
+      "defaultSpeaker": "zh_female_xiaohe_uranus_bigtts",
+      "note": "完整音色清单见 references/audio-tts-asr.md（30+ 音色，按语言与风格分组）"
+    }
+  }
+}
