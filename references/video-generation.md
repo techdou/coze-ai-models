@@ -7,9 +7,8 @@ SDK：`coze-coding-dev-sdk`（多模态参考需 >= 0.7.24），仅后端使用�
 | 模型 ID | 能力 |
 | --- | --- |
 | `doubao-seedance-2-0-260128`（默认） | 文生视频、首尾帧、多模态参考（参考图 0-9 / 参考视频 0-3 / 参考音频 0-3）、视频编辑与延长、同步生成音频 |
-| `doubao-seedance-1-0-pro-250528` | 文生视频、首尾帧（无多模态参考） |
 
-以 `references/models.json` 的 `video` 组为准。
+以 `references/models.json` 的 `video` 组为准（2026-09-29 核对：SDK 官方文档与 Coze Model Hub registry 仅含 Seedance 2.0，网关 /v1/models 实测 video 组亦仅 Seedance 2.0；旧模型 `doubao-seedance-1-0-pro-250528` 已不在当前可用清单）。
 
 ## API 签名
 

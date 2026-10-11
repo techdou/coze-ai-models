@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-04T05:02:43.380Z",
+  "generatedAt": "2026-09-29T16:14:37.858Z",
   "sdkSync": {
     "success": false,
     "skipped": true,
     "error": null,
     "upstreamCount": 0,
-    "attemptedAt": "2026-09-04T05:02:43.380Z"
+    "attemptedAt": "2026-09-29T16:14:37.858Z"
   },
   "models": {
     "llm": [
@@ -95,13 +95,6 @@
         "description": "文生视频/首尾帧/多模态参考（参考图+视频+音频）/同步音频生成",
         "default": true,
         "source": "static"
-      },
-      {
-        "id": "doubao-seedance-1-0-pro-250528",
-        "name": "Seedance 1.0 Pro",
-        "type": "video",
-        "description": "文生视频/首尾帧（无多模态参考）",
-        "source": "static"
       }
     ],
     "embedding": [
@@ -118,6 +111,11 @@
       "engine": "TTSClient",
       "defaultSpeaker": "zh_female_xiaohe_uranus_bigtts",
       "note": "完整音色清单见 references/audio-tts-asr.md（30+ 音色，按语言与风格分组）"
+    },
+    "asr": {
+      "engine": "ASRClient",
+      "model": "doubao-asr",
+      "note": "语音识别。音频 ≤ 2 小时、≤ 100MB，支持 WAV/MP3/M4A/OGG OPUS，可 URL 或 Base64 提交；详细用法与限制见 references/audio-tts-asr.md"
     }
   }
 }

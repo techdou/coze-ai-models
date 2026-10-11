@@ -52,13 +52,9 @@ const STATIC_BASELINE = {
       default: true,
       source: 'static',
     },
-    {
-      id: 'doubao-seedance-1-0-pro-250528',
-      name: 'Seedance 1.0 Pro',
-      type: 'video',
-      description: '文生视频/首尾帧（无多模态参考）',
-      source: 'static',
-    },
+    // 2026-09-29 核对：SDK 官方文档与 Coze Model Hub registry 仅含 Seedance 2.0，
+    // 网关 /v1/models 实测 video 组亦仅 Seedance 2.0；旧条目 doubao-seedance-1-0-pro-250528
+    // 已从可用清单移除（如需了解请在 SDK 文档再确认）。
   ],
   embedding: [
     {
@@ -74,6 +70,11 @@ const STATIC_BASELINE = {
     engine: 'TTSClient',
     defaultSpeaker: 'zh_female_xiaohe_uranus_bigtts',
     note: '完整音色清单见 references/audio-tts-asr.md（30+ 音色，按语言与风格分组）',
+  },
+  asr: {
+    engine: 'ASRClient',
+    model: 'doubao-asr',
+    note: '语音识别。音频 ≤ 2 小时、≤ 100MB，支持 WAV/MP3/M4A/OGG OPUS，可 URL 或 Base64 提交；详细用法与限制见 references/audio-tts-asr.md',
   },
 };
 
