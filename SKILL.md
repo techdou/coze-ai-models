@@ -2,7 +2,7 @@
 name: coze-ai-models
 description: 通过 Coze 模型网关（OpenAI 兼容）与 coze-coding-dev-sdk 调用全部 AI 模型能力，附一套实测通过的调用脚本（chat/image_generate/video_generate/tts/asr/embed），内置重试、超时、容错轮询与模型清单同步。覆盖 LLM 对话/流式/视觉理解、生图（Seedream）、生视频（Seedance 2.0 文生/首尾帧/多模态参考）、TTS 语音合成、ASR 语音识别、Embedding 向量化、模型选型与调用报错排障。当用户要求生成图片/视频/语音、语音转文字、向量化/语义检索/RAG、使用 Coze 网关或 Model Hub，或提到 Seedream/Seedance/Doubao/GLM 等模型 ID 时使用。
 metadata:
-  version: "0.2.0"
+  version: "1.1.0"
 ---
 
 # Coze AI Models — 网关模型调用（脚本工具箱 + SDK 参考）
@@ -21,7 +21,7 @@ metadata:
 - 字段为 `COZE_MODELS_BASE_URL` 和 `COZE_MODELS_API_KEY`，模板见 `.env.example`。根地址自动补 `/v1`，已带 `/v1` 的地址不重复追加。两项均未配置才走原有 Coze SDK 路径；只配置一项则报错。
 - 配置网关时使用 OpenAI 兼容协议：`const config = loadConfig(); const client = new OpenAI(config);`。先加载配置，再创建客户端；配置仅限服务端。其他语言也遵守相同字段和优先级。
 - 网关 Key 不可作为 Coze 官方开发者凭证使用。现有 references 中的 `coze-coding-dev-sdk` 示例用于直连 Coze；网关调用应对照其 `/docs`，不能直接套用 SDK 的客户端或请求参数。
-- 验证配置与脚本鲁棒性：`node --test tests/`（config 6 项 + scripts 离线鲁棒性 5 项，零 API 消耗）；只读连通性验证：`node scripts/update_models.mjs`。
+- 验证配置与脚本鲁棒性：`node --test "tests/*.test.mjs"`（config 6 项 + scripts 离线鲁棒性 5 项，零 API 消耗；注意 Windows/Node 22 下 `node --test tests/` 目录形式会被当作模块路径报错，须用引号包裹的 glob 或显式文件列表）；只读连通性验证：`node scripts/update_models.mjs`。
 
 ## 调用脚本（已实测，优先使用）
 
@@ -82,7 +82,12 @@ metadata:
 
 ## 何时运行同步脚本
 
-`references/models.json` 由 `scripts/update_models.mjs` 维护。以下情况**先跑一次再选型**：
+`references/models.json` 与 `references/gateway-models.json` 由 `scripts/update_models.mjs` 维护：
+
+- **`gateway-models.json`（网关面清单）**：脚本用 `.env` 网关凭证调 `/models` 实时拉取，是**实际调用面**的权威清单（配好 `COZE_MODELS_BASE_URL`/`COZE_MODELS_API_KEY` 即可刷新，无需 Coze 开发者凭证）。
+- **`models.json`（SDK 面清单）**：静态基线 + SDK 实时同步（需 Coze 开发者凭证），含各模态默认模型标注与 `sdkSync` 同步状态，用于选型与高级参数参考。
+
+以下情况**先跑一次再选型**：
 
 1. 用户提到的模型不在 models.json 中（可能为上游新增）。
 2. models.json 的 `generatedAt` 距今超过 7 天，且当前环境具备开发者凭证。
@@ -122,4 +127,4 @@ node coze-ai-models/scripts/update_models.mjs --fallback-only # 无凭证/离线
 - TTS 的 `uid` 必填；生图非法 size 会被 SDK 静默回退 2K（不报错）；Seedance 首尾帧与多模态参考互斥，且多模态参考仅 2.0 支持。
 - 模型能力与参数档位以 models.json 和上游实际返回为准，禁止编造模型 ID。
 - `.env` 含密钥：不得打印、提交或打入 `.skill` 包；分享时只包含 `.env.example`。`.gitignore` 已忽略本地配置，但打包工具未必遵守它，打包时显式排除。
-- 维护本 skill：修改脚本后运行 `node --check scripts/*.mjs` 与 `node --test tests/`；新增/修改调用方式须先在网关上实测验证并把参数边界回写进「调用脚本」章节，禁止凭猜测更新文档。
+- 维护本 skill：修改脚本后运行 `node --check scripts/*.mjs` 与 `node --test "tests/*.test.mjs"`；新增/修改调用方式须先在网关上实测验证并把参数边界回写进「调用脚本」章节，禁止凭猜测更新文档。
