@@ -40,6 +40,8 @@ metadata:
 
 **实测参数边界（2026-10-09，网关 https://models.coze.site）**：
 
+- 模型清单时效（2026-10-28 复测）：`/models` 返回的清单**不保证可用**——`glm-4-7-251222` 在清单中但实际调用报"模型已停运"（HTTP 502 upstream_error）；选型后先小成本实测一发再上业务。当日实测可用主力：`doubao-seed-2-0-pro-260215`。
+
 - 视频：`POST /videos/generations` 返回 `202 {id, status: queued}`，`GET /videos/generations/{id}` 轮询至 `succeeded/failed/cancelled`，成功后取 `video_url` 下载；**chat 端点不收视频模型**（报 not available for chat）；视频默认带「AI生成」合规角标（watermark 无法关闭）；8s 720p 实测约 8 分钟完成。
 - 生图：**custom size 必须在 2560x1440 ~ 4096x4096**（传 1024x1024 会 400）；用预设档 `2K` 等最稳。同步返回 `data[].url`，脚本已自动下载。**`n>1` 实测仍只返回 1 张**（网关/上游收窄，2026-10-11 复测），多图需求请多次调用；脚本的多图序号保存为防御逻辑。
 - ASR：body 为 JSON（非 multipart），音频字段名是 **`base64`**（纯 base64 串）或 **`url`**（http[s] URL）；`data:` URL、`audio`、`file`、`input_audio` 等形态均报 "url or base64 is required"。
