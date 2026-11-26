@@ -18,10 +18,10 @@ metadata:
 ## 连接配置（先读取）
 
 - Node.js 22+；网关配置统一通过 `scripts/config.mjs` 的 `loadConfig()` 读取。逐字段优先使用本技能目录 `.env` 中的非空值，其次使用进程环境变量；不依赖当前工作目录，不修改系统环境变量。
-- 字段为 `COZE_MODELS_BASE_URL` 和 `COZE_MODELS_API_KEY`，模板见 `.env.example`。根地址自动补 `/v1`，已带 `/v1` 的地址不重复追加。两项均未配置才走原有 Coze SDK 路径；只配置一项则报错。
+- 网关字段为 `COZE_MODELS_BASE_URL` 和 `COZE_MODELS_API_KEY`，模板见 `.env.example`。根地址自动补 `/v1`，已带 `/v1` 的地址不重复追加。只配置一项会报错，不影响独立的 SDK 清单同步。
 - 配置网关时使用 OpenAI 兼容协议：`const config = loadConfig(); const client = new OpenAI(config);`。先加载配置，再创建客户端；配置仅限服务端。其他语言也遵守相同字段和优先级。
 - 网关 Key 不可作为 Coze 官方开发者凭证使用。现有 references 中的 `coze-coding-dev-sdk` 示例用于直连 Coze；网关调用应对照其 `/docs`，不能直接套用 SDK 的客户端或请求参数。
-- 验证配置与脚本鲁棒性：`node --test "tests/*.test.mjs"`（config 6 项 + scripts 离线鲁棒性 5 项，零 API 消耗；注意 Windows/Node 22 下 `node --test tests/` 目录形式会被当作模块路径报错，须用引号包裹的 glob 或显式文件列表）；只读连通性验证：`node scripts/update_models.mjs`。
+- 验证配置与脚本鲁棒性：`node --test "tests/*.test.mjs"`（配置、脚本鲁棒性和双清单刷新测试，零 API 消耗；注意 Windows/Node 22 下 `node --test tests/` 目录形式会被当作模块路径报错，须用引号包裹的 glob 或显式文件列表）；只读连通性验证：`node scripts/update_models.mjs`。
 
 ## 调用脚本（已实测，优先使用）
 
@@ -71,10 +71,12 @@ metadata:
   "generatedAt": "2026-09-04T…",   // 最后写入时间
   "sdkSync": {                     // 最近一次同步状态
     "success": true,               // 本次是否实时拉取成功
-    "skipped": false,              // 是否 --fallback-only 跳过实时同步
-    "lastSuccessAt": null,         // 最近一次实时成功时间
-    "upstreamCount": 0,            // 上游返回的模型数
-    "error": null                  // 本次失败原因（成功为 null）
+    "skipped": false,              // 是否因无凭证或 --fallback-only 跳过
+    "skipReason": null,            // 跳过原因；其余为 null
+    "attemptedAt": "2026-09-04T…",  // 本次检查开始时间
+    "lastSuccessAt": "2026-09-04T…", // 最近一次实时成功时间；从未成功则为 null
+    "upstreamCount": 12,           // 本次同步获得的模型数；失败或跳过为 0
+    "error": null                  // 本次失败原因；成功或跳过为 null
   },
   "models": { "llm": [], "vision": [], "image": [], "video": [], "tts": {}, "embedding": [] }
 }
@@ -86,24 +88,26 @@ metadata:
 
 `references/models.json` 与 `references/gateway-models.json` 由 `scripts/update_models.mjs` 维护：
 
-- **`gateway-models.json`（网关面清单）**：脚本用 `.env` 网关凭证调 `/models` 实时拉取，是**实际调用面**的权威清单（配好 `COZE_MODELS_BASE_URL`/`COZE_MODELS_API_KEY` 即可刷新，无需 Coze 开发者凭证）。
-- **`models.json`（SDK 面清单）**：静态基线 + SDK 实时同步（需 Coze 开发者凭证），含各模态默认模型标注与 `sdkSync` 同步状态，用于选型与高级参数参考。
+- **`gateway-models.json`（网关面清单）**：用本技能 `.env` 或进程环境中的 `COZE_MODELS_BASE_URL`/`COZE_MODELS_API_KEY` 调 `/models`，记录 `gatewaySync`。这是网关曝光的模型清单，不保证其中每个模型实际可调用。
+- **`models.json`（SDK 面清单）**：静态基线 + SDK `listModels()`，记录 `sdkSync`，用于选型与高级参数参考。目标项目需安装带 `listModels()` 的 `coze-coding-dev-sdk`（如 `0.7.33`）。凭证由 SDK 读取：使用已登录的 Coze CLI / 桌面端，或将 `COZE_API_TOKEN` 导出到进程环境（沙箱可注入）；网关 Key 不能替代它。
 
 以下情况**先跑一次再选型**：
 
 1. 用户提到的模型不在 models.json 中（可能为上游新增）。
-2. models.json 的 `generatedAt` 距今超过 7 天，且当前环境具备开发者凭证。
+2. 对应清单的 `lastSuccessAt` 为空或距今超过 7 天，且当前环境具备该侧凭证。
 3. 调用报"model not found / 无权限"类错误时，刷新确认模型是否下线或改名。
 
 运行方式（在项目根目录）：
 
 ```bash
-node coze-ai-models/scripts/update_models.mjs                 # 优先实时同步，失败自动回退
-node coze-ai-models/scripts/update_models.mjs --fallback-only # 无凭证/离线环境仅用静态基线
+node coze-ai-models/scripts/update_models.mjs                  # 默认 --target all：各自独立刷新
+node coze-ai-models/scripts/update_models.mjs --target gateway # 只更新 gateway-models.json
+node coze-ai-models/scripts/update_models.mjs --target sdk     # 只更新 models.json
+node coze-ai-models/scripts/update_models.mjs --fallback-only  # 离线：只刷新 SDK 静态基线
 ```
 
-- 脚本始终 exit 0；成败看输出与 models.json 的 `sdkSync` 字段。
-- 实时同步需 Coze 开发者凭证（CLI 登录）；无凭证环境自动回退静态基线，且不会覆盖历史同步成功的数据。
+- 默认两侧都检查。有凭证的一侧实时刷新，无凭证的一侧写入 `skipped` / `skipReason`；一侧配置错误、请求失败或写入失败不阻断另一侧。失败或跳过均保留历史成功数据和 `lastSuccessAt`；`generatedAt` 只是本次写入时间。网关从未同步成功时可能为空，SDK 仍有静态基线。
+- 退出码 0 表示状态已写入，**不等于实时成功**；逐侧查看 `gatewaySync` / `sdkSync` 的 `success`、`skipReason`、`error`。参数或文件读写错误返回非零。
 
 ## 操作步骤
 

@@ -12,7 +12,7 @@
 | 语音 | TTS 合成 / ASR 识别 | `references/audio-tts-asr.md` |
 | 向量 | Embedding 模型与调用 | `references/embedding-guide.md` |
 
-`references/models.json` 为模型清单快照，可用 `scripts/update_models.mjs` 从网关刷新。
+`references/models.json` 是 SDK 模型快照，`references/gateway-models.json` 是仅保留在本地的网关快照。运行 `node scripts/update_models.mjs` 可独立刷新两份清单；用 `--target sdk` 或 `--target gateway` 只刷新其中一份，或用 `--fallback-only` 离线刷新 SDK 静态基线。
 
 ## 安装
 
@@ -45,7 +45,7 @@ cp .env.example .env
 ## 测试
 
 ```bash
-node tests/config.test.mjs
+node --test "tests/*.test.mjs"
 ```
 
 ## License
